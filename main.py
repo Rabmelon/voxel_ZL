@@ -38,7 +38,7 @@ def isequal_vec3(a, b):
 
 @ti.func
 def center_square(cpos, direction, width, mat, color, color_noise):
-    for n1 in ti.static(range(-width, width + 1)):
+    for n1 in range(-width, width + 1):
         n2 = width - ti.abs(n1)
         if isequal_vec3(direction, vec3(1,0,0)) or isequal_vec3(direction, vec3(-1,0,0)):
             scene.set_voxel(vec3(cpos[0], cpos[1]+n1, cpos[2]+n2), mat, vec3(1.0, 0.0, 0.0)+color_noise * ti.random())
@@ -52,7 +52,7 @@ def center_square(cpos, direction, width, mat, color, color_noise):
 
 @ti.func
 def create_arrow(start, direction, length, arrwidth, mat, color, color_noise):
-    create_block(start, vec3(1)+(length - 1)*direction, mat, color, color_noise)
+    create_block(start, vec3(1)+length*direction, mat, color, color_noise)
     for i in range(arrwidth):
         center_square(start+(length - i - 1)*direction, direction, i + 1, mat, color, color_noise)
 
@@ -82,10 +82,10 @@ def initialize_voxels():
     # for i in ti.static(range(len(dir_corner))):
     #     extend_center(center + dir_corner[i] * l_cubic // 2, vec3(1)-ti.abs(dir_corner[i]), w_edge, w_edge, 2, color_corner, vec3(0.1))
 
-    create_arrow(center, dir_face[1], 10, 3, 1, color_edge, vec3(0.1))
+    create_arrow(center, dir_face[0], 10, 3, 1, color_edge, vec3(0.1))
 
-    scene.set_voxel(center, 2, vec3(1))
-    scene.set_voxel(center+10*dir_face[1], 1, vec3(0))
+    scene.set_voxel(center+vec3(0,1,0), 2, vec3(1))
+    scene.set_voxel(center+10*dir_face[0]+vec3(0,1,0), 1, vec3(0))
 
 initialize_voxels()
 
