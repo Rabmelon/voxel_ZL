@@ -11,7 +11,7 @@ from taichi.math import *
 scene = Scene(voxel_edges=0, exposure=2)    # create a scene, set the width of voxel edge line and exposure value
 scene.set_floor(-1, (0.5, 0.5, 0.4))     # height and color of floor
 scene.set_background_color((0.5, 0.5, 0.4))     # color of sky
-# scene.set_directional_light((1, 1, 1), 0.2, (1, 0.8, 0.6))     # direction and color of light
+scene.set_directional_light((1, 1, 1), 0.2, (1, 0.8, 0.6))     # direction and color of light
 
 dir_face = (vec3(1,0,0), vec3(0,1,0), vec3(0,0,1), vec3(-1,0,0), vec3(0,-1,0), vec3(0,0,-1))
 dir_corner = (vec3(1,1,1), vec3(1,1,-1), vec3(1,-1,1), vec3(1,-1,-1), vec3(-1,1,1), vec3(-1,1,-1), vec3(-1,-1,1), vec3(-1,-1,-1))
@@ -29,12 +29,32 @@ def extend_center(cpos, direction, length, width, mat, color, color_noise):
     create_block(begin_pos, size, mat, color, color_noise)
 
 @ti.func
-def create_line_centroid(start, direction, length, width, color, color_noise):
-    pass
+def isequal_vec3(a, b):
+    flag = 0
+    for i in ti.static(range(3)):
+        if a[i] == b[i]:
+            flag += 1
+    return 1 if flag == 3 else 0
 
 @ti.func
-def create_arrow(start, direction, length, color, color_noise):
-    pass
+def center_square(cpos, direction, width, mat, color, color_noise):
+    for n1 in ti.static(range(-width, width + 1)):
+        n2 = width - ti.abs(n1)
+        if isequal_vec3(direction, vec3(1,0,0)) or isequal_vec3(direction, vec3(-1,0,0)):
+            scene.set_voxel(vec3(cpos[0], cpos[1]+n1, cpos[2]+n2), mat, vec3(1.0, 0.0, 0.0)+color_noise * ti.random())
+            scene.set_voxel(vec3(cpos[0], cpos[1]+n1, cpos[2]-n2), mat, vec3(1.0, 0.0, 0.0)+color_noise * ti.random())
+        elif isequal_vec3(direction, vec3(0,1,0)) or isequal_vec3(direction, vec3(0,-1,0)):
+            scene.set_voxel(vec3(cpos[0]+n1, cpos[1], cpos[2]+n2), mat, vec3(0.0, 1.0, 0.0)+color_noise * ti.random())
+            scene.set_voxel(vec3(cpos[0]+n1, cpos[1], cpos[2]-n2), mat, vec3(0.0, 1.0, 0.0)+color_noise * ti.random())
+        elif isequal_vec3(direction, vec3(0,0,1)) or isequal_vec3(direction, vec3(0,0,-1)):
+            scene.set_voxel(vec3(cpos[0]+n1, cpos[1]+n2, cpos[2]), mat, vec3(0.0, 0.0, 1.0)+color_noise * ti.random())
+            scene.set_voxel(vec3(cpos[0]+n1, cpos[1]-n2, cpos[2]), mat, vec3(0.0, 0.0, 1.0)+color_noise * ti.random())
+
+@ti.func
+def create_arrow(start, direction, length, arrwidth, mat, color, color_noise):
+    create_block(start, vec3(1)+(length - 1)*direction, mat, color, color_noise)
+    for i in range(arrwidth):
+        center_square(start+(length - i - 1)*direction, direction, i + 1, mat, color, color_noise)
 
 @ti.func
 def create_arrows(cpos, length, color, color_noise):
@@ -46,6 +66,7 @@ def initialize_voxels():
     create_block(ivec3(-64, -64, -64), ivec3(128, 1, 1), 1, vec3(1.0, 0.0, 0.0), vec3(0.1))
     create_block(ivec3(-64, -64, -64), ivec3(1, 128, 1), 1, vec3(0.0, 1.0, 0.0), vec3(0.1))
     create_block(ivec3(-64, -64, -64), ivec3(1, 1, 128), 1, vec3(0.0, 0.0, 1.0), vec3(0.1))
+
 
     center = vec3(0, 0, 0)
     l_cubic = 60
@@ -60,6 +81,11 @@ def initialize_voxels():
     #     extend_center(center + dir_edge[i] * l_cubic // 2, vec3(1)-ti.abs(dir_edge[i]), l_cubic - w_edge, w_edge, 1, color_edge, vec3(0.1))
     # for i in ti.static(range(len(dir_corner))):
     #     extend_center(center + dir_corner[i] * l_cubic // 2, vec3(1)-ti.abs(dir_corner[i]), w_edge, w_edge, 2, color_corner, vec3(0.1))
+
+    create_arrow(center, dir_face[1], 10, 3, 1, color_edge, vec3(0.1))
+
+    scene.set_voxel(center, 2, vec3(1))
+    scene.set_voxel(center+10*dir_face[1], 1, vec3(0))
 
 initialize_voxels()
 
