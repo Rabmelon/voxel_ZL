@@ -90,7 +90,7 @@ def initialize_voxels():
     create_block(ivec3(-64, -64, -64), ivec3(1, 1, 128), 2, vec3(0.0, 0.0, 1.0), vec3(0.1))
 
 
-    center = vec3(20, 0, 20)
+    center = vec3(-10, 10, -20)
     l_cubic = 40
     l_arrow = 16
     w_face = 2
@@ -100,8 +100,9 @@ def initialize_voxels():
     color_edge = vec3(0.2, 0.2, 0.2)
     color_corner = vec3(0.4, 0.4, 0.4)
     color_arr = vec3(0.3, 0.3, 0.3)
-    # create_tensor(center, l_cubic, l_arrow, w_edge, w_face, w_arrow, color_face, color_edge, color_corner, color_arr, vec3(0.1))
-    create_tensor(vec3(-20, 10, -20), 20, 8, 2, 4, 2, color_face, color_edge, color_corner, color_arr, vec3(0.1))
+    create_tensor(center, l_cubic, l_arrow, w_edge, w_face, w_arrow, color_face, color_edge, color_corner, color_arr, vec3(0.1))
+    create_tensor(vec3(-20, 5, 40), 20, 8, 4, 2, 2, vec3(0.2,0.4,0.6), vec3(0.2), vec3(0.4), vec3(0.6), vec3(0.1))
+    create_tensor(vec3(40, -5, 15), 12, 6, 4, 2, 2, vec3(0.2,0.4,0.6), vec3(0.2), vec3(0.4), vec3(0.6), vec3(0.1))
 
 initialize_voxels()
 
