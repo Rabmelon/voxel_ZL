@@ -61,21 +61,27 @@ def create_arrow(dir_a, start, direction, length, arrwidth, mat, color, color_no
         center_square(start+(length - i - 1)*direction, direction, i + 1, mat, color, color_noise)
 
 @ti.func
-def create_arrows(cpos, l_cub, l_arr, w_arr, mat, color, color_noise):
+def create_tensor(cpos, l_cub, l_arr, w_edge, w_face, w_arr, color_face, color_edge, color_corner, color_arr, color_noise):
+    for i in ti.static(range(len(dir_face))):
+        extend_center(cpos + dir_face[i] * l_cub // 2, vec3(1)-ti.abs(dir_face[i]), l_cub - w_edge, w_face, 2, color_face, color_noise)
+    for i in ti.static(range(len(dir_edge))):
+        extend_center(cpos + dir_edge[i] * l_cub // 2, vec3(1)-ti.abs(dir_edge[i]), l_cub - w_edge, w_edge, 1, color_edge, color_noise)
+    for i in ti.static(range(len(dir_corner))):
+        extend_center(cpos + dir_corner[i] * l_cub // 2, vec3(1)-ti.abs(dir_corner[i]), w_edge, w_edge, 2, color_corner, color_noise)
     for i in ti.static(range(6)):
-        create_arrow(-1, cpos+(l_cub/2+1)*dir_face[i], dir_face[i], l_arr, w_arr, mat, color, color_noise)
-    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[0], dir_face[1], l_arr, w_arr, mat, color, color_noise)
-    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[0], dir_face[2], l_arr, w_arr, mat, color, color_noise)
-    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[1], dir_face[2], l_arr, w_arr, mat, color, color_noise)
-    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[1], dir_face[0], l_arr, w_arr, mat, color, color_noise)
-    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[2], dir_face[0], l_arr, w_arr, mat, color, color_noise)
-    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[2], dir_face[1], l_arr, w_arr, mat, color, color_noise)
-    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[3], dir_face[4], l_arr, w_arr, mat, color, color_noise)
-    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[3], dir_face[5], l_arr, w_arr, mat, color, color_noise)
-    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[4], dir_face[5], l_arr, w_arr, mat, color, color_noise)
-    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[4], dir_face[3], l_arr, w_arr, mat, color, color_noise)
-    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[5], dir_face[3], l_arr, w_arr, mat, color, color_noise)
-    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[5], dir_face[4], l_arr, w_arr, mat, color, color_noise)
+        create_arrow(-1, cpos+(l_cub/2+1)*dir_face[i], dir_face[i], l_arr, w_arr, 1, color_arr, color_noise)
+    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[0], dir_face[1], l_arr, w_arr, 1, color_arr, color_noise)
+    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[0], dir_face[2], l_arr, w_arr, 1, color_arr, color_noise)
+    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[1], dir_face[2], l_arr, w_arr, 1, color_arr, color_noise)
+    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[1], dir_face[0], l_arr, w_arr, 1, color_arr, color_noise)
+    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[2], dir_face[0], l_arr, w_arr, 1, color_arr, color_noise)
+    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[2], dir_face[1], l_arr, w_arr, 1, color_arr, color_noise)
+    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[3], dir_face[4], l_arr, w_arr, 1, color_arr, color_noise)
+    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[3], dir_face[5], l_arr, w_arr, 1, color_arr, color_noise)
+    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[4], dir_face[5], l_arr, w_arr, 1, color_arr, color_noise)
+    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[4], dir_face[3], l_arr, w_arr, 1, color_arr, color_noise)
+    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[5], dir_face[3], l_arr, w_arr, 1, color_arr, color_noise)
+    create_arrow(1, cpos+(w_arr+l_cub/2+1)*dir_face[5], dir_face[4], l_arr, w_arr, 1, color_arr, color_noise)
 
 @ti.kernel
 def initialize_voxels():
@@ -84,23 +90,18 @@ def initialize_voxels():
     create_block(ivec3(-64, -64, -64), ivec3(1, 1, 128), 2, vec3(0.0, 0.0, 1.0), vec3(0.1))
 
 
-    center = vec3(0, 0, 0)
+    center = vec3(20, 0, 20)
     l_cubic = 40
+    l_arrow = 16
     w_face = 2
     w_edge = 6
+    w_arrow = 4
     color_face = vec3(0.2, 0.4, 0.6)
     color_edge = vec3(0.2, 0.2, 0.2)
     color_corner = vec3(0.4, 0.4, 0.4)
-    for i in ti.static(range(len(dir_face))):
-        extend_center(center + dir_face[i] * l_cubic // 2, vec3(1)-ti.abs(dir_face[i]), l_cubic - w_edge, w_face, 2, color_face, vec3(0.1))
-    for i in ti.static(range(len(dir_edge))):
-        extend_center(center + dir_edge[i] * l_cubic // 2, vec3(1)-ti.abs(dir_edge[i]), l_cubic - w_edge, w_edge, 1, color_edge, vec3(0.1))
-    for i in ti.static(range(len(dir_corner))):
-        extend_center(center + dir_corner[i] * l_cubic // 2, vec3(1)-ti.abs(dir_corner[i]), w_edge, w_edge, 2, color_corner, vec3(0.1))
-
-    create_arrows(center, l_cubic, 16, 4, 1, color_edge, vec3(0.1))
-
-    scene.set_voxel(vec3(0,35,0), 2, vec3(1))
+    color_arr = vec3(0.3, 0.3, 0.3)
+    # create_tensor(center, l_cubic, l_arrow, w_edge, w_face, w_arrow, color_face, color_edge, color_corner, color_arr, vec3(0.1))
+    create_tensor(vec3(-20, 10, -20), 20, 8, 2, 4, 2, color_face, color_edge, color_corner, color_arr, vec3(0.1))
 
 initialize_voxels()
 
